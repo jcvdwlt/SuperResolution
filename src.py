@@ -157,17 +157,7 @@ class LM:
         plt.ylabel('Residual')
         plt.show()
 
-    def back_track_search(self):
-        count = 0
-        self.step_size = .5
-        r = self.residual(self.x)
-        rn = self.residual(self.x + self.step_size * self.s)
-        while r > rn and count < 5:
-            self.step_size *= 0.7
-            rn = self.residual(self.x + self.step_size * self.s)
-            count += 1
-
-    def check_condition(self):
+    def check_condition(self):  # only for test purposes, random re-injection 
         k = int(len(self.x) / 3)
         a = self.x[2*k:]
         t = self.x[0:2*k]
