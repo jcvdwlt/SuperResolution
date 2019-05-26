@@ -8,5 +8,5 @@ This is a toy example of a *nonlinear least squares* (NLS) approach to the spars
 
 A rudimentary implementation of the Levenberg Marquardt algorithm is used to solve both the source injection and localisation subproblems.
 
-See the notebook for a more detailed explanation.
+See the notebook for a more detailed explanation, and src.py for algorithm implementations.
 
