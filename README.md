@@ -1,6 +1,6 @@
 # SuperResolution
 
-Sparse superresolution entails post-processing images of few sufficiently separated light sources to resolve their positions to a higher accuracy than that of the imaging device.
+Sparse super resolution entails post-processing images of few sufficiently separated light sources to resolve their positions to a higher accuracy than that of the imaging device.
 
 <img src="https://github.com/jcvdwlt/SuperResolution/blob/master/figs/sr4.gif" > 
 
