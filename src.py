@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-C_CONST = 0.005
+C_CONST = 0.1
+V = 10**-1
 C_STEP = 0.1
 LB = 0
 UB = 1
@@ -82,14 +83,31 @@ class Constraints:
     def constraints_active(self, x):
         return np.any(x < self.lb) or np.any(x > self.ub)
 
-    def penalty(self, x):
+    def penalty(self, x):  # 1-norm constraint penalty function
         return self.c_const * (np.sum(np.abs(x[x < self.lb])) + np.sum(np.abs(x[x > self.ub])))
+
+    def penalty_sq(self, x):  # squared constraint penalty function
+        if self.constraints_active(x):
+            return self.c_const * (np.sum(x[x < self.lb]**2) + np.sum(x[x > self.ub]**2)) / 2
+        else:
+            return 0
 
     def derivative(self, x):
         cg = np.zeros_like(x)
         cg[x < self.lb] = - 1
         cg[x > self.ub] = 1
         return self.c_const * cg
+
+    def derivative_sq(self, x):
+        cg = np.zeros_like(x)
+        cg[x < self.lb] = x[x < self.lb] - self.lb
+        cg[x > self.ub] = x[x > self.ub] - self.ub
+        return self.c_const * cg
+
+    def hes_sq(self, x):
+        v = np.abs(self.derivative(x))
+        h = np.diag(v)
+        return h
 
 
 class LM:
@@ -112,7 +130,8 @@ class LM:
         g = np.sum(self.gradient(self.x) ** 2)
         while self.count < self.max_iter and g > self.tol:
             self.calculate_dir(self.x)
-            self.set_step_size()
+            # self.set_step_size()
+            self.newton_line_search()
             self.x += self.step_size * self.s
             self.count += 1
             g = np.sum(self.gradient(self.x) ** 2)
@@ -129,13 +148,13 @@ class LM:
 
     def gradient(self, x):
         g = np.matmul(self.jac(x).transpose(), self.res(x))
-        return g + self.con.derivative(x)
+        return g + self.con.derivative_sq(x)
 
     def hessian_model(self, x):
-        return np.matmul(self.jac(x).transpose(), self.jac(x)) + np.eye(self.lx) * self.v
+        return np.matmul(self.jac(x).transpose(), self.jac(x)) + np.eye(self.lx) * self.v + self.con.hes_sq(x)
 
     def residual(self, xc):
-        return 0.5 * np.dot(self.res(xc), self.res(xc)) + self.con.penalty(xc)
+        return 0.5 * np.dot(self.res(xc), self.res(xc)) + self.con.penalty_sq(xc)
 
     def set_step_size(self):
         if self.con.constraints_active(self.x):
@@ -196,7 +215,7 @@ class SrSolver:
         return jac(t, a, self.ml, self.psf)
 
     def find_insert(self):
-        lm = LM(self.init_x, self.g_jac, self.fi_res, 10 ** - 5, 10, 10 ** -5)
+        lm = LM(self.init_x, self.g_jac, self.fi_res, V, 10, 10 ** -5)
         lm.iterate_ns(verbose=False)
         return lm.x
 
@@ -228,7 +247,7 @@ class SrSolver:
             self.update_cs()
             self.append_to_x(self.find_insert())
 
-            lm = LM(self.x, self.g_jac, self.g_res, 10 ** - 3, 30, 10 ** - 6)
+            lm = LM(self.x, self.g_jac, self.g_res, V, 30, 10 ** - 6)
             lm.iterate_ns(verbose=True)
 
             self.x = lm.x
