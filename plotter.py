@@ -63,6 +63,6 @@ def animate(i):
     # return est
 
 
-anim = animation.FuncAnimation(fig, animate, frames=len(xl), interval=300, blit=False)
-# anim.save('sr4.gif', writer='imagemagick', fps=2)
+anim = animation.FuncAnimation(fig, animate, frames=len(xl), interval=200, blit=False)
+anim.save('figs/sr4.gif', writer='imagemagick', fps=4)
 plt.show()
